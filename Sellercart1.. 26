@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sellers Admin Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1, h2, h3 {
+      margin-bottom: 10px;
+    }
+
+    input, select, button {
+      margin-bottom: 10px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 5px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sellers Admin Page</h1>
+  
+  <!-- Selling Price Subsection -->
+  <h2>Selling Price:</h2>
+  <input type="number" id="sellingPriceInput">
+  
+  <!-- Product Name Subsection -->
+  <h2>Product Name:</h2>
+  <input type="text" id="productNameInput">
+  
+  <!-- Choose Category Subsection -->
+  <h2>Choose Category:</h2>
+  <select id="categorySelect">
+    <option value="Electronics">Electronics</option>
+    <option value="Clothing">Clothing</option>
+    <option value="Books">Books</option>
+    <!-- Add more categories as needed -->
+  </select>
+  
+  <!-- Add Product Button -->
+  <button onclick="addProduct()">Add Product</button>
+  
+  <!-- Display Added Products -->
+  <h2>Added Products:</h2>
+  <div id="productListsContainer"></div>
+  
+  <script>
+    // Load products from local storage when the page loads
+    window.addEventListener('load', async () => {
+      try {
+        const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
+        const productListsContainer = document.getElementById('productListsContainer');
+
+        for (const product of savedProducts) {
+          const productItem = createProductItem(product);
+          appendProductToCategory(product, productListsContainer);
+        }
+      } catch (error) {
+        console.error('Error while loading products:', error);
+      }
+    });
+
+    async function addProduct() {
+      try {
+        const sellingPrice = document.getElementById('sellingPriceInput').value;
+        const productName = document.getElementById('productNameInput').value;
+        const category = document.getElementById('categorySelect').value;
+
+        // Create a new product object
+        const product = {
+          sellingPrice,
+          productName,
+          category,
+        };
+
+        // Save the product to local storage
+        const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
+        savedProducts.push(product);
+        localStorage.setItem('products', JSON.stringify(savedProducts));
+
+        // Create a new list item to display the product
+        const productItem = createProductItem(product);
+
+        // Append the product to the respective category list
+        appendProductToCategory(product, document.getElementById('productListsContainer'));
+
+        // Clear the input fields after adding the product
+        document.getElementById('sellingPriceInput').value = '';
+        document.getElementById('productNameInput').value = '';
+      } catch (error) {
+        console.error('Error while adding product:', error);
+      }
+    }
+
+    function createProductItem(product) {
+      // Create a new list item to display the product
+      const productItem = document.createElement('li');
+      productItem.innerText = `${product.productName} ${product.sellingPrice}rs`;
+
+      // Create a delete button for each product
+      const deleteButton = document.createElement('button');
+      deleteButton.innerText = 'Delete';
+      deleteButton.addEventListener('click', async () => {
+        try {
+          productItem.remove(); // Remove the product item when the delete button is clicked
+
+          // Remove the product from local storage
+          const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
+          const updatedProducts = savedProducts.filter(savedProduct => savedProduct !== product);
+          localStorage.setItem('products', JSON.stringify(updatedProducts));
+        } catch (error) {
+          console.error('Error while deleting product:', error);
+        }
+      });
+
+      // Append the delete button to the product item
+      productItem.appendChild(deleteButton);
+
+      return productItem;
+    }
+
+    function appendProductToCategory(product, container) {
+      // Check if the category list already exists
+      const categoryList = container.querySelector(`#${product.category}`);
+      
+      if (categoryList) {
+        // If category list exists, append product to it
+        const productItem = createProductItem(product);
+        categoryList.appendChild(productItem);
+      } else {
+        // If category list doesn't exist, create a new list and append the category heading
+        const newList = document.createElement('ul');
+        newList.id = product.category;
+        newList.innerHTML = `<h3>${product.category}</h3>`;
+        container.appendChild(newList);
+
+        // Append the product item to the new list
+        const productItem = createProductItem(product);
+        newList.appendChild(productItem);
+      }
+    }
+  </script>
+</body>
+</html>
